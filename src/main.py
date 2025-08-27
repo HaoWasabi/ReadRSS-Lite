@@ -2,7 +2,6 @@ import os, logging, tracemalloc, asyncio, nextcord
 from nextcord.ext import commands
 from dotenv import load_dotenv
 
-
 # Load environment variables
 load_dotenv()
 # Start memory tracking
