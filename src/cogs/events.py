@@ -1,10 +1,11 @@
 import logging
 from nextcord.ext import commands
+from utils.commands_cog import CommandsCog
 
 logger = logging.getLogger("Events")
 
 
-class Events(commands.Cog):
+class Events(CommandsCog):
     def __init__(self, bot: commands.Bot):
         super().__init__(bot)
 
