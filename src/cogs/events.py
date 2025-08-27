@@ -160,7 +160,7 @@ class Events(CommandsCog):
         except Exception as e:
             logger.error(f"Error loading feed list: {e}")
 
-    @tasks.loop(seconds=25)
+    @tasks.loop(seconds=60)
     async def push_noti(self):
         logger.debug('Running background task push_noti.')
         await self.load_guilds()

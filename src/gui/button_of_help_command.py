@@ -17,14 +17,4 @@ class ButtonOfHelpCommnad(View):
 ```This is a Discord bot built with Python. ReadRSS bot brings RSS feeds 
 to your Discord server. Receive notifications from news sources 
 including Youtube and much more. 
-
-                        -- ABOUT US --
-                                                       Summer 2024
-         ██████╗  ██████╗██████╗ ███████╗██╗   ██╗     + HaoWasabi
-        ██╔════╝ ██╔════╝██╔══██╗██╔════╝██║   ██║     + nguyluky
-        ██║  ███╗██║     ██║  ██║█████╗  ██║   ██║     + NaelTuhline
-        ██║   ██║██║     ██║  ██║██╔══╝  ╚██╗ ██╔╝     + tivibin789
-        ╚██████╔╝╚██████╗██████╔╝███████╗ ╚████╔╝      + phusomnia
-        ╚═════╝  ╚═════╝╚═════╝ ╚══════╝  ╚═══╝        + camdao
-                                                     
         ```''')
