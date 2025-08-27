@@ -1,0 +1,17 @@
+name: Ping Replit Bot
+
+# Kích hoạt workflow:
+# 1. Theo lịch (cron) → mỗi 6 phút ping 1 lần
+# 2. Run thủ công (workflow_dispatch)
+on:
+  schedule:
+    - cron: '*/6 * * * *'  # ping mỗi 6 phút
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Replit bot
+        run: |
+          curl -X GET https://c88acdc8-894a-4fc9-bc39-3bbad1a24811-00-144tnn741f4se.sisko.replit.dev/

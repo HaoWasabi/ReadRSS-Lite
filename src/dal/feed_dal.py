@@ -1,187 +1,182 @@
-import sqlite3
 from typing import List, Optional
 from dto.feed_dto import FeedDTO
+from firebase_admin import credentials, firestore, initialize_app
 from .base_dal import BaseDAL, logger
+import hashlib
+import traceback
+
 
 class FeedDAL(BaseDAL):
     def __init__(self):
         super().__init__()
-        
+        self.collection_name = "tbl_feed"
+
     def create_table(self):
-        self.open_connection()
-        try:
-            self.cursor.execute('''
-            CREATE TABLE IF NOT EXISTS tbl_feed(
-                link_feed TEXT,
-                link_atom_feed TEXT,
-                title_feed TEXT,
-                description_feed TEXT,
-                logo_feed TEXT,
-                pubdate_feed DATETIME,
-                channel_id TEXT ,
-                PRIMARY KEY (link_feed, link_atom_feed, channel_id),
-                FOREIGN KEY (channel_id) REFERENCES tbl_channel(channel_id)
-            )
-            ''')
-            self.connection.commit()
-            logger.info(f"Table 'tbl_feed' created successfully.")
-        except sqlite3.Error as e:
-            logger.error(f"Error creating table 'tbl_feed': {e}")
-        finally:
-            self.close_connection()
-            
+        # Firestore tự tạo collection khi insert dữ liệu
+        logger.info(f"Collection '{self.collection_name}' sẽ được tự động tạo khi insert dữ liệu.")
+
+    def _generate_doc_id(self, feed_dto: FeedDTO) -> str:
+        """
+        Sinh document ID hợp lệ cho Firestore dựa trên link_feed, link_atom_feed, channel_id.
+        """
+        raw_id = f"{feed_dto.get_link_feed()}_{feed_dto.get_link_atom_feed()}_{feed_dto.get_channel_id()}"
+        return hashlib.md5(raw_id.encode("utf-8")).hexdigest()
+
     def insert_feed(self, feed_dto: FeedDTO) -> bool:
-        self.open_connection()
         try:
-            with self.connection:
-                self.cursor.execute('''
-                    INSERT INTO tbl_feed (link_feed, link_atom_feed, title_feed, description_feed, logo_feed, pubdate_feed, channel_id)
-                    VALUES (?, ?, ?, ?, ?, ?, ?)
-                    ''', (feed_dto.get_link_feed(), feed_dto.get_link_atom_feed(), feed_dto.get_title_feed(), 
-                          feed_dto.get_description_feed(), feed_dto.get_logo_feed(), feed_dto.get_pubdate_feed(), feed_dto.get_channel_id()))
-                self.connection.commit()
-                logger.info(f"Data inserted into 'tbl_feed' successfully.")
-                return True
-        except sqlite3.IntegrityError as e:
-            logger.error(f"Feed with link_atom_feed={feed_dto.get_link_atom_feed()} and link_feed={feed_dto.get_link_feed()} already exists in 'tbl_feed'")
+            doc_id = self._generate_doc_id(feed_dto)
+            doc_ref = self.db.collection(self.collection_name).document(doc_id)
+
+            if doc_ref.get().exists:
+                logger.warning(f"Feed đã tồn tại: {doc_id}")
+                return False
+
+            doc_ref.set({
+                "link_feed": feed_dto.get_link_feed(),
+                "link_atom_feed": feed_dto.get_link_atom_feed(),
+                "title_feed": feed_dto.get_title_feed(),
+                "description_feed": feed_dto.get_description_feed(),
+                "logo_feed": feed_dto.get_logo_feed(),
+                "pubdate_feed": feed_dto.get_pubdate_feed(),
+                "channel_id": feed_dto.get_channel_id()
+            })
+            logger.info(f"Thêm feed thành công: {doc_id}")
+            return True
+        except Exception as e:
+            logger.error(f"Lỗi khi insert feed: {e}\n{traceback.format_exc()}")
             return False
-        except sqlite3.Error as e:
-            logger.error(f"Error inserting data into 'tbl_feed': {e}")
-            return False
-        finally:
-            self.close_connection()
-            
+
     def delete_feed_by_link_atom_feed_and_channel_id(self, link_atom_feed: str, channel_id: str) -> bool:
-        self.open_connection()
         try:
-            with self.connection:
-                self.cursor.execute('''
-                DELETE FROM tbl_feed WHERE link_atom_feed = ? and channel_id = ?
-                ''', (link_atom_feed,channel_id))
-                self.connection.commit()
-                logger.info(f"Data deleted from 'tbl_feed' successfully.")
-                return True
-        except sqlite3.Error as e:
-            logger.error(f"Error deleting data from 'tbl_feed': {e}")
+            query = self.db.collection(self.collection_name) \
+                           .where("link_atom_feed", "==", link_atom_feed) \
+                           .where("channel_id", "==", channel_id) \
+                           .stream()
+            deleted = False
+            for doc in query:
+                doc.reference.delete()
+                deleted = True
+            return deleted
+        except Exception as e:
+            logger.error(f"Lỗi khi delete feed theo link_atom_feed+channel_id: {e}\n{traceback.format_exc()}")
             return False
-        finally:
-            self.close_connection()
-            
+
     def delete_feed_by_link_feed_and_channel_id(self, link_feed: str, channel_id: str) -> bool:
-        self.open_connection()
         try:
-            with self.connection:
-                self.cursor.execute('''
-                DELETE FROM tbl_feed WHERE link_feed = ? and channel_id = ?
-                ''', (link_feed,channel_id))
-                self.connection.commit()
-                logger.info(f"Data deleted from 'tbl_feed' successfully.")
-                return True
-        except sqlite3.Error as e:
-            logger.error(f"Error deleting data from 'tbl_feed': {e}")
+            query = self.db.collection(self.collection_name) \
+                           .where("link_feed", "==", link_feed) \
+                           .where("channel_id", "==", channel_id) \
+                           .stream()
+            deleted = False
+            for doc in query:
+                doc.reference.delete()
+                deleted = True
+            return deleted
+        except Exception as e:
+            logger.error(f"Lỗi khi delete feed theo link_feed+channel_id: {e}\n{traceback.format_exc()}")
             return False
-        finally:
-            self.close_connection()
-            
+
     def delete_feed_by_channel_id(self, channel_id: str) -> bool:
-        self.open_connection()
         try:
-            with self.connection:
-                self.cursor.execute('''
-                DELETE FROM tbl_feed WHERE channel_id = ?
-                ''', (channel_id,))
-                self.connection.commit()
-                logger.info(f"Data deleted from 'tbl_feed' successfully.")
-                return True
-        except sqlite3.Error as e:
-            logger.error(f"Error deleting data from 'tbl_feed': {e}")
+            query = self.db.collection(self.collection_name) \
+                           .where("channel_id", "==", channel_id) \
+                           .stream()
+            deleted = False
+            for doc in query:
+                doc.reference.delete()
+                deleted = True
+            return deleted
+        except Exception as e:
+            logger.error(f"Lỗi khi delete feed theo channel_id: {e}\n{traceback.format_exc()}")
             return False
-        finally:
-            self.close_connection()
-        
+
     def delete_all_feed(self) -> bool:
-        self.open_connection()
         try:
-            with self.connection:
-                self.cursor.execute('''
-                DELETE FROM tbl_feed
-                ''')
-                self.connection.commit()
-                logger.info(f"All data deleted into 'tbl_feed' successfully.")
-                return True
-        except sqlite3.Error as e:
-            logger.error(f"Error deleting data into 'tbl_feed': {e}")
+            docs = self.db.collection(self.collection_name).stream()
+            for doc in docs:
+                doc.reference.delete()
+            return True
+        except Exception as e:
+            logger.error(f"Lỗi khi delete all feed: {e}\n{traceback.format_exc()}")
             return False
-        finally:
-            self.close_connection()
-            
+
     def update_feed_by_link_atom_feed_and_channel_id(self, link_atom_feed: str, channel_id: str, feed_dto: FeedDTO) -> bool:
-        self.open_connection()
         try:
-            with self.connection:
-                self.cursor.execute('''
-                UPDATE tbl_feed SET link_feed = ?, link_atom_feed = ?, title_feed = ?, description_feed = ?, logo_feed = ?, pubdate_feed = ?
-                WHERE link_atom_feed = ? and channel_id = ?
-                ''', (feed_dto.get_link_feed(), feed_dto.get_link_atom_feed(), feed_dto.get_title_feed(), 
-                      feed_dto.get_description_feed(), feed_dto.get_logo_feed(), feed_dto.get_pubdate_feed(), link_atom_feed, channel_id))
-                self.connection.commit()
-                logger.info(f"Data updated in 'tbl_feed' successfully.")
-                return True
-        except sqlite3.Error as e:
-            logger.error(f"Error updating data in 'tbl_feed': {e}")
+            query = self.db.collection(self.collection_name) \
+                           .where("link_atom_feed", "==", link_atom_feed) \
+                           .where("channel_id", "==", channel_id) \
+                           .stream()
+            updated = False
+            for doc in query:
+                doc.reference.update({
+                    "link_feed": feed_dto.get_link_feed(),
+                    "link_atom_feed": feed_dto.get_link_atom_feed(),
+                    "title_feed": feed_dto.get_title_feed(),
+                    "description_feed": feed_dto.get_description_feed(),
+                    "logo_feed": feed_dto.get_logo_feed(),
+                    "pubdate_feed": feed_dto.get_pubdate_feed(),
+                })
+                updated = True
+            return updated
+        except Exception as e:
+            logger.error(f"Lỗi khi update feed: {e}\n{traceback.format_exc()}")
             return False
-        finally:
-            self.close_connection()
-            
+
     def get_feed_by_link_atom_feed_and_channel_id(self, link_atom_feed: str, channel_id: str) -> Optional[FeedDTO]:
-        self.open_connection()
         try:
-            with self.connection:
-                self.cursor.execute('''
-                SELECT * FROM tbl_feed WHERE link_atom_feed = ? and channel_id = ?
-                ''', (link_atom_feed, channel_id))
-                row = self.cursor.fetchone()
-                if row:
-                    return FeedDTO(row[0], row[1], row[2], row[3], row[4], row[5], row[6])
-                return None
-        except sqlite3.Error as e:
-            logger.error(f"Error fetching data from 'tbl_feed': {e}")
+            query = self.db.collection(self.collection_name) \
+                           .where("link_atom_feed", "==", link_atom_feed) \
+                           .where("channel_id", "==", str(channel_id)) \
+                           .limit(1) \
+                           .stream()
+            for doc in query:
+                data = doc.to_dict()
+                return FeedDTO(
+                    data["link_feed"],
+                    data["link_atom_feed"],
+                    data["title_feed"],
+                    data["description_feed"],
+                    data["logo_feed"],
+                    data["pubdate_feed"],
+                    data["channel_id"]
+                )
             return None
-        finally:
-            self.close_connection()
-        
+        except Exception as e:
+            logger.error(f"Lỗi khi get feed: {e}\n{traceback.format_exc()}")
+            return None
+
     def get_all_feed(self) -> List[FeedDTO]:
-        self.open_connection()
         try:
-            with self.connection:
-                self.cursor.execute('''
-                SELECT * FROM tbl_feed 
-                ''')
-                rows = self.cursor.fetchall()
-                if rows:
-                    return [FeedDTO(row[0], row[1], row[2], row[3], row[4], row[5], row[6]) for row in rows]
-                else:
-                    return []
-        except sqlite3.Error as e:
-            logger.error(f"Error fetching all data from 'tbl_feed': {e}")
+            docs = self.db.collection(self.collection_name).stream()
+            return [
+                FeedDTO(
+                    d.to_dict()["link_feed"],
+                    d.to_dict()["link_atom_feed"],
+                    d.to_dict()["title_feed"],
+                    d.to_dict()["description_feed"],
+                    d.to_dict()["logo_feed"],
+                    d.to_dict()["pubdate_feed"],
+                    d.to_dict()["channel_id"]
+                ) for d in docs
+            ]
+        except Exception as e:
+            logger.error(f"Lỗi khi get all feed: {e}\n{traceback.format_exc()}")
             return []
-        finally:
-            self.close_connection()
 
     def get_all_feed_by_channel_id(self, channel_id: str) -> List[FeedDTO]:
-        self.open_connection()
         try:
-            with self.connection:
-                self.cursor.execute('''
-                SELECT * FROM tbl_feed WHERE channel_id =?
-                ''', (channel_id,))
-                rows = self.cursor.fetchall()
-                if rows:
-                    return [FeedDTO(row[0], row[1], row[2], row[3], row[4], row[5], row[6]) for row in rows]
-                else:
-                    return []
-        except sqlite3.Error as e:
-            logger.error(f"Error fetching all data from 'tbl_feed': {e}")
+            docs = self.db.collection(self.collection_name).where("channel_id", "==", str(channel_id)).stream()
+            return [
+                FeedDTO(
+                    d.to_dict()["link_feed"],
+                    d.to_dict()["link_atom_feed"],
+                    d.to_dict()["title_feed"],
+                    d.to_dict()["description_feed"],
+                    d.to_dict()["logo_feed"],
+                    d.to_dict()["pubdate_feed"],
+                    d.to_dict()["channel_id"]
+                ) for d in docs
+            ]
+        except Exception as e:
+            logger.error(f"Lỗi khi get feed theo channel_id: {e}\n{traceback.format_exc()}")
             return []
-        finally:
-            self.close_connection()

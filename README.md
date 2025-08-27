@@ -29,6 +29,7 @@ ReadRSS Lite là phiên bản miễn phí của Aiko (ReadRSS) - một bot Disco
     Tạo file `.env` và thêm thông tin sau:
 ```
 DISCORD_TOKEN=your_bot_token_here
+FIREBASE_CREDENTIALS=your_firebase_service_account_json
 ```
 
 5. Run the bot:

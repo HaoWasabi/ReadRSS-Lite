@@ -167,3 +167,4 @@ cython_debug/
 .env.staging
 
 db.sqlite3
+configs/serviceAccount.json

@@ -1,141 +1,107 @@
-import sqlite3
 from typing import Optional, List
 from dto.server_dto import ServerDTO
 from .base_dal import BaseDAL, logger
+from google.cloud import exceptions
 
 class ServerDAL(BaseDAL):
     def __init__(self):
         super().__init__()
-        
-    def create_table(self):
-        self.open_connection()
-        try:
-            self.cursor.execute('''
-            CREATE TABLE IF NOT EXISTS tbl_server(
-                server_id TEXT PRIMARY KEY,
-                server_name TEXT,
-                hex_color TEXT,
-                is_active INTERGER DEFAULT 1
-            )
-            ''')
-            self.connection.commit()
-            logger.info(f"Table 'tbl_server' created successfully.")
-        except sqlite3.Error as e:
-            logger.error(f"Error creating table 'tbl_server': {e}")
-        finally:
-            self.close_connection()
-            
+        self.collection = self.db.collection("tbl_server")
+
     def insert_server(self, server_dto: ServerDTO) -> bool:
-        self.open_connection()
         try:
-            with self.connection:
-                self.cursor.execute('''
-                    INSERT INTO tbl_server (server_id, server_name, hex_color)
-                    VALUES (?, ?, ?)
-                    ''', (server_dto.get_server_id(), server_dto.get_server_name(), server_dto.get_hex_color()))
-                self.connection.commit()
-                logger.info(f"Data inserted successfully into 'tbl_server'.")
-                return True
-        except sqlite3.IntegrityError as e:
-            logger.error(f"Server with server_id={server_dto.get_server_id()} already exists in 'tbl_server'")
-            return False
-        except sqlite3.Error as e:
+            doc_ref = self.collection.document(server_dto.get_server_id())
+            if doc_ref.get().exists:
+                logger.error(f"Server with server_id={server_dto.get_server_id()} already exists in 'tbl_server'")
+                return False
+            doc_ref.set({
+                "server_id": server_dto.get_server_id(),
+                "server_name": server_dto.get_server_name(),
+                "hex_color": server_dto.get_hex_color(),
+                "is_active": server_dto.get_state() if hasattr(server_dto, "get_state") else True
+            })
+            logger.info(f"Data inserted successfully into 'tbl_server'.")
+            return True
+        except Exception as e:
             logger.error(f"Error inserting data into 'tbl_server': {e}")
             return False
-        finally:
-            self.close_connection()
-            
+
     def delete_server_by_server_id(self, server_id: str) -> bool:
-        self.open_connection()
         try:
-            with self.connection:
-                self.cursor.execute('''
-                UPDATE tbl_server
-                SET is_active = 0
-                WHERE server_id = ?
-                ''', (server_id,))
-                self.connection.commit()
-                logger.info(f"Data deleted successfully from 'tbl_server'.")
-                return True
-        except sqlite3.Error as e:
+            doc_ref = self.collection.document(server_id)
+            if not doc_ref.get().exists:
+                logger.error(f"Server with id={server_id} not found.")
+                return False
+            doc_ref.update({"is_active": False})
+            logger.info(f"Data deleted successfully from 'tbl_server'.")
+            return True
+        except exceptions.NotFound:
+            logger.error(f"Server with id={server_id} not found for deletion.")
+            return False
+        except Exception as e:
             logger.error(f"Error deleting data from 'tbl_server': {e}")
             return False
-        finally:
-            self.close_connection()
-            
+
     def delete_all_server(self) -> bool:
-        self.open_connection()
         try:
-            with self.connection:
-                self.connection.execute('''
-                UPDATE tbl_server
-                SET is_active = 0
-                ''')
-                self.connection.commit()
-                logger.info(f"All data deleted successfully from 'tbl_server'.")
-                return True
-        except sqlite3.Error as e:
+            docs = self.collection.stream()
+            for doc in docs:
+                self.collection.document(doc.id).update({"is_active": False})
+            logger.info("All data marked as deleted in 'tbl_server'.")
+            return True
+        except Exception as e:
             logger.error(f"Error deleting all data from 'tbl_server': {e}")
             return False
-        finally:
-            self.close_connection()
-        
+
     def update_server(self, server_dto: ServerDTO) -> bool:
-        self.open_connection()
         try:
-            with self.connection:
-                self.cursor.execute('''
-                UPDATE tbl_server
-                SET server_name = ?, hex_color = ?, is_active = ?
-                WHERE server_id = ?
-                ''', (server_dto.get_server_name(), server_dto.get_hex_color(), server_dto.get_state(), server_dto.get_server_id()))
-                self.connection.commit()
-                logger.info(f"ALl data updated successfully in 'tbl_server'.")
-                return True
-        except sqlite3.Error as e:
-            logger.error(f"Error updating data by server_id in 'tbl_server': {e}")
+            doc_ref = self.collection.document(server_dto.get_server_id())
+            if not doc_ref.get().exists:
+                logger.error(f"Server with id={server_dto.get_server_id()} not found for update.")
+                return False
+            doc_ref.update({
+                "server_name": server_dto.get_server_name(),
+                "hex_color": server_dto.get_hex_color(),
+                "is_active": server_dto.get_state()
+            })
+            logger.info(f"Server {server_dto.get_server_id()} updated successfully in 'tbl_server'.")
+            return True
+        except Exception as e:
+            logger.error(f"Error updating server: {e}")
             return False
-        finally:
-            self.close_connection()
-            
+
     def get_server_by_server_id(self, server_id: str) -> Optional[ServerDTO]:
-        self.open_connection()
         try:
-            self.cursor.execute('''
-            SELECT * FROM tbl_server
-            WHERE server_id = ?
-            ''', (server_id,))
-            row = self.cursor.fetchone()
-            if row:
-                return ServerDTO(row[0], row[1], row[2], bool(row[3]))
-            else:
-                return None
-        except sqlite3.Error as e:
-            logger.error(f"Error fetching data by server_id from 'tbl_server': {e}")
+            doc = self.collection.document(server_id).get()
+            if doc.exists:
+                data = doc.to_dict()
+                return ServerDTO(
+                    data["server_id"],
+                    data["server_name"],
+                    data["hex_color"],
+                    data.get("is_active", True)
+                )
             return None
-        finally:
-            self.close_connection()
-        
+        except Exception as e:
+            logger.error(f"Error fetching server by id={server_id}: {e}")
+            return None
+
     def get_all_server(self, ignore_state=False, is_active=True) -> List[ServerDTO]:
-        self.open_connection()
         try:
             if ignore_state:
-                self.cursor.execute('''
-                SELECT * FROM tbl_server
-                ''')
+                docs = self.collection.stream()
             else:
-                self.cursor.execute('''
-                SELECT * FROM tbl_server
-                WHERE is_active = ?
-                ''', (is_active,))
-            rows = self.cursor.fetchall()
-            if rows:
-                return [ServerDTO(row[0], row[1], row[2]) for row in rows]
-            else:
-                return []
-        except sqlite3.Error as e:
-            logger.error(f"Error fetching all data from 'tbl_server': {e}")
+                docs = self.collection.where("is_active", "==", is_active).stream()
+            servers = []
+            for doc in docs:
+                data = doc.to_dict()
+                servers.append(ServerDTO(
+                    data["server_id"],
+                    data["server_name"],
+                    data["hex_color"],
+                    data.get("is_active", True)
+                ))
+            return servers
+        except Exception as e:
+            logger.error(f"Error fetching all servers: {e}")
             return []
-        finally:
-            self.close_connection()
-    

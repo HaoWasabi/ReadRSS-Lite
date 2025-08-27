@@ -1,10 +1,11 @@
 import os, logging, tracemalloc, asyncio, nextcord
 from nextcord.ext import commands
 from dotenv import load_dotenv
+from flask import Flask
+from threading import Thread
 
 # Load environment variables
 load_dotenv()
-# Start memory tracking
 tracemalloc.start()
 
 # Set up intents
@@ -19,7 +20,17 @@ logger = logging.getLogger(__name__)
 # Set up bot instance
 bot = commands.Bot(command_prefix='_', intents=intents)
 
-# Load cogs asynchronously
+# --- Web server để GitHub Actions ping ---
+app = Flask(__name__)
+
+@app.route('/')
+def home():
+    return "Bot is alive!"
+
+def run_flask():
+    app.run(host='0.0.0.0', port=8080)
+
+# --- Load cogs ---
 async def load_cogs():
     cogs_dir = os.path.join(os.path.dirname(__file__), 'cogs')
     for filename in os.listdir(cogs_dir):
@@ -31,16 +42,21 @@ async def load_cogs():
             except Exception as e:
                 logger.error(f'Failed to load extension {cog_name}: {e}')
 
+# --- Run bot ---
 def run_bot():
     TOKEN = os.getenv('DISCORD_TOKEN')
     if TOKEN:
-        logger.info(f"Token found: {TOKEN[:5]}...")  # Log 5 ký tự đầu để kiểm tra token
+        logger.info(f"Token found: {TOKEN[:5]}...")  
         bot.run(TOKEN)
     else:
         logger.error("DISCORD_TOKEN not found in .env file.")
 
+# --- Main ---
+if __name__ == "__main__":
+    # Start Flask server in a separate thread
+    flask_thread = Thread(target=run_flask)
+    flask_thread.start()
 
-if __name__ == "__main__":    
-    # ## Run bot and load cogs
+    # Load cogs and run bot
     asyncio.run(load_cogs())
     run_bot()
