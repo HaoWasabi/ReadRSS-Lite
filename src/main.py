@@ -1,4 +1,8 @@
-import os, logging, tracemalloc, asyncio, nextcord
+import os
+import logging
+import tracemalloc
+import asyncio
+import nextcord
 from nextcord.ext import commands
 from dotenv import load_dotenv
 from flask import Flask
@@ -14,21 +18,35 @@ intents.message_content = True
 intents.guilds = True
 
 # Set up logging
-logging.basicConfig(level=logging.NOTSET, format="%(filename)s:%(lineno)d [%(levelname)-s] %(message)s")
+logging.basicConfig(
+    level=logging.NOTSET,
+    format="%(filename)s:%(lineno)d [%(levelname)-s] %(message)s")
 logger = logging.getLogger(__name__)
 
 # Set up bot instance
 bot = commands.Bot(command_prefix='_', intents=intents)
 
+
+@bot.event
+async def on_ready():
+    logger.info(f"✅ Logged in as {bot.user} (ID: {bot.user.id})")
+    logger.info(f"🔗 Connected to {len(bot.guilds)} guild(s).")
+
+
 # --- Web server để GitHub Actions ping ---
 app = Flask(__name__)
+
 
 @app.route('/')
 def home():
     return "Bot is alive!"
 
+
 def run_flask():
+    # Ẩn log Flask nếu không muốn spam
+    logging.getLogger('werkzeug').setLevel(logging.ERROR)
     app.run(host='0.0.0.0', port=8080)
+
 
 # --- Load cogs ---
 async def load_cogs():
@@ -37,26 +55,30 @@ async def load_cogs():
         if filename.endswith('.py') and filename != '__init__.py':
             cog_name = f'cogs.{filename[:-3]}'
             try:
-                bot.load_extension(cog_name)
+                await bot.load_extension(cog_name)  # ✅ Dùng await
                 logger.info(f'Successfully loaded extension {cog_name}')
             except Exception as e:
                 logger.error(f'Failed to load extension {cog_name}: {e}')
 
-# --- Run bot ---
-def run_bot():
-    TOKEN = os.getenv('DISCORD_TOKEN')
-    if TOKEN:
-        logger.info(f"Token found: {TOKEN[:5]}...")  
-        bot.run(TOKEN)
-    else:
-        logger.error("DISCORD_TOKEN not found in .env file.")
 
 # --- Main ---
+async def main():
+    TOKEN = os.getenv('DISCORD_TOKEN')
+    if not TOKEN:
+        logger.error("DISCORD_TOKEN not found in .env file.")
+        return
+
+    # load cogs trước khi start bot
+    await load_cogs()
+
+    # chạy bot (Nextcord chưa hỗ trợ async with)
+    await bot.start(TOKEN)
+
+
 if __name__ == "__main__":
     # Start Flask server in a separate thread
     flask_thread = Thread(target=run_flask)
     flask_thread.start()
 
-    # Load cogs and run bot
-    asyncio.run(load_cogs())
-    run_bot()
+    # Run bot
+    asyncio.run(main())
