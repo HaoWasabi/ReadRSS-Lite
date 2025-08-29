@@ -150,13 +150,6 @@ class Events(CommandsCog):
                 else:  # If it's a server channel, load and send to server channel
                     await self.load_server_feed(list_feed, channel_send)
 
-            # Gửi tin nhắn đến các kênh đã đăng ký của server
-            for guild in self.bot.guilds:
-                for channel in guild.text_channels:
-                    # Kiểm tra xem kênh này có nằm trong danh sách kênh đã đăng ký không
-                    if channel.id in [int(c.get_channel_id()) for c in list_channel]:
-                        await self.load_server_feed(list_feed, channel)
-
         except Exception as e:
             logger.error(f"Error loading feed list: {e}")
 
