@@ -92,6 +92,7 @@ class CommandSetFeed(CommandsCog):
             ChannelBLL().insert_channel(channel_dto)
 
             feed_dto.set_channel_id(channel_dto.get_channel_id())
+            feed_dto.set_link_atom_feed(link_rss)
             FeedBLL().insert_feed(feed_dto)
             
             if isinstance(channel, TextChannel):
