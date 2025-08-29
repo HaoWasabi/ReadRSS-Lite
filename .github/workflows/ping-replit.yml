@@ -14,4 +14,4 @@ jobs:
     steps:
       - name: Ping Replit bot
         run: |
-          curl -X GET https://c88acdc8-894a-4fc9-bc39-3bbad1a24811-00-144tnn741f4se.sisko.replit.dev/
+          curl -X GET https://215f4fdc-2c17-4ec4-862d-bc307b1e6062-00-1vqt65j23yw6b.sisko.replit.dev/
