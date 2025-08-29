@@ -1,7 +1,9 @@
 import hashlib
-from typing import Optional, List
+from typing import List
+from typing import Optional
 from dto.emty_dto import EmtyDTO
-from .base_dal import BaseDAL, logger
+from dal.base_dal import BaseDAL
+from dal.base_dal import logger
 
 class EmtyDAL(BaseDAL):
     def __init__(self):

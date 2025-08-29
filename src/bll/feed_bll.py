@@ -1,7 +1,8 @@
 from bll.singleton import Singleton
 from dto.feed_dto import FeedDTO
 from dal.feed_dal import FeedDAL
-from typing import Optional, List
+from typing import Optional
+from typing import List
 
 class FeedBLL(Singleton):
     def __init__(self):

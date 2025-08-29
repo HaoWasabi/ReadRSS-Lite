@@ -1,7 +1,11 @@
-from typing import List, Optional
+from typing import List
+from typing import Optional
 from dto.feed_dto import FeedDTO
-from firebase_admin import credentials, firestore, initialize_app
-from .base_dal import BaseDAL, logger
+from firebase_admin import credentials
+from firebase_admin import firestore
+from firebase_admin import initialize_app
+from dal.base_dal import BaseDAL
+from dal.base_dal import logger
 import hashlib
 import traceback
 

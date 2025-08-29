@@ -1,5 +1,6 @@
 from typing import Optional
-from nextcord import DMChannel, TextChannel
+from nextcord import DMChannel
+from nextcord import TextChannel
 from nextcord.ext.commands import Context
 from nextcord import Interaction
 from typing import Optional

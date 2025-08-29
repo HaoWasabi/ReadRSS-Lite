@@ -1,7 +1,8 @@
 from bll.singleton import Singleton
 from dto.server_dto import ServerDTO
 from dal.server_dal import ServerDAL
-from typing import Optional, List
+from typing import Optional
+from typing import List
 
 class ServerBLL(Singleton):
     def __init__(self):

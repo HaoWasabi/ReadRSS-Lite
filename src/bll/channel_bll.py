@@ -1,7 +1,8 @@
 from bll.singleton import Singleton
 from dal.channel_dal import ChannelDAL
 from dto.channel_dto import ChannelDTO
-from typing import Optional, List
+from typing import Optional
+from typing import List
 
 class ChannelBLL(Singleton):
     def __init__(self):

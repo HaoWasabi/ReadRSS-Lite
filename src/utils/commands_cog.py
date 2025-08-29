@@ -1,6 +1,6 @@
 import logging
 from nextcord.ext import commands
-from .check_cogs import CheckCogs
+from utils.check_cogs import CheckCogs
 from typing import Optional
 from nextcord.ext.commands import Context
 from nextcord import Interaction

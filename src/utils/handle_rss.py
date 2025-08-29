@@ -2,10 +2,11 @@ import re
 import feedparser
 import cloudscraper
 from bs4 import BeautifulSoup
-from typing import Optional, Tuple
+from typing import Optional
+from typing import Tuple
 from dto.feed_dto import FeedDTO
 from dto.emty_dto import EmtyDTO
-from .text_processor import TextProcessor
+from utils.text_processor import TextProcessor
 
 class GetRSS:
     def __init__(self, url: str):

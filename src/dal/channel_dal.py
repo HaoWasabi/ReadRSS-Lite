@@ -1,8 +1,9 @@
-from typing import Optional, List
+from typing import List
+from typing import Optional
 from dto.channel_dto import ChannelDTO
-from .base_dal import BaseDAL, logger
+from dal.base_dal import BaseDAL
+from dal.base_dal import logger
 from google.cloud.firestore_v1 import DocumentSnapshot
-
 
 class ChannelDAL(BaseDAL):
     def __init__(self):

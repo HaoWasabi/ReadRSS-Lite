@@ -1,6 +1,8 @@
-from typing import Optional, List
+from typing import List
+from typing import Optional
 from dto.server_dto import ServerDTO
-from .base_dal import BaseDAL, logger
+from dal.base_dal import BaseDAL
+from dal.base_dal import logger
 from google.cloud import exceptions
 
 class ServerDAL(BaseDAL):
