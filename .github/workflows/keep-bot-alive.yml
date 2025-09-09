@@ -1,0 +1,30 @@
+name: Keep Bot Alive
+
+# Kích hoạt workflow:
+# 1. Theo lịch (cron) → mỗi 14 phút ping 1 lần để tránh rate limit
+# 2. Run thủ công (workflow_dispatch)
+on:
+  schedule:
+    - cron: '*/14 * * * *'  # ping mỗi 14 phút
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Keep bot alive
+        run: |
+          # Ping bot endpoint để giữ bot online
+          # Thay đổi URL này thành URL bot của bạn
+          # Ví dụ: Railway, Render, Replit, hoặc service khác
+          
+          # Nếu sử dụng Railway:
+          # curl -X GET ${{ secrets.BOT_URL }} || echo "Ping failed but continuing..."
+          
+          # Nếu sử dụng Render:
+          # curl -X GET ${{ secrets.BOT_URL }} || echo "Ping failed but continuing..."
+          
+          # Nếu sử dụng Replit (URL mẫu - thay bằng URL của bạn):
+          curl -X GET https://215f4fdc-2c17-4ec4-862d-bc307b1e6062-00-1vqt65j23yw6b.sisko.replit.dev/ || echo "Ping failed but continuing..."
+          
+          echo "Ping completed at $(date)"

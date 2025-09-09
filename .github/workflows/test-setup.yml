@@ -1,0 +1,58 @@
+name: Test Bot Setup
+
+# Test bot configuration and dependencies
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [ main, master ]
+  push:
+    branches: [ main, master ]
+
+jobs:
+  test-setup:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+        
+    - name: Install dependencies
+      run: |
+        pip install --upgrade pip
+        pip install -r requirements.txt
+        
+    - name: Test bot structure
+      run: |
+        python test_setup.py
+        
+    - name: Test bot compilation
+      run: |
+        cd src
+        python -m py_compile main.py
+        python -m py_compile bot_runner.py
+        
+    - name: Test cogs compilation
+      run: |
+        cd src
+        for file in cogs/*.py; do
+          if [ "$file" != "cogs/__init__.py" ]; then
+            echo "Testing $file..."
+            python -m py_compile "$file"
+          fi
+        done
+        
+    - name: Lint with flake8 (if available)
+      run: |
+        pip install flake8 || true
+        if command -v flake8 &> /dev/null; then
+          flake8 src --count --select=E9,F63,F7,F82 --show-source --statistics
+        else
+          echo "flake8 not available, skipping lint"
+        fi
+      continue-on-error: true

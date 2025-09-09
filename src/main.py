@@ -39,7 +39,29 @@ app = Flask(__name__)
 
 @app.route('/')
 def home():
-    return "Bot is alive!"
+    import datetime
+    uptime = datetime.datetime.now().isoformat()
+    return {
+        "status": "Bot is alive!",
+        "timestamp": uptime,
+        "bot_name": "ReadRSS Lite",
+        "version": "1.0.0"
+    }
+
+
+@app.route('/health')
+def health():
+    """Health check endpoint for monitoring"""
+    try:
+        guild_count = len(bot.guilds) if bot.is_ready() else 0
+        return {
+            "status": "healthy",
+            "bot_ready": bot.is_ready(),
+            "guild_count": guild_count,
+            "user": str(bot.user) if bot.user else None
+        }
+    except Exception as e:
+        return {"status": "error", "error": str(e)}, 500
 
 
 def run_flask():

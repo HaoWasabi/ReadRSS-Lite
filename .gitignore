@@ -168,3 +168,11 @@ cython_debug/
 
 db.sqlite3
 configs/serviceAccount.json
+
+# Bot specific files
+src/bot.log
+*.log
+
+# Temporary files
+tmp/
+temp/

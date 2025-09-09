@@ -1,0 +1,49 @@
+name: Run ReadRSS Bot
+
+# Chạy bot liên tục trên GitHub Actions
+on:
+  workflow_dispatch:  # Cho phép chạy thủ công
+  push:
+    branches: [ main, master ]  # Tự động chạy khi push code
+  schedule:
+    - cron: '0 */6 * * *'  # Restart bot mỗi 6 giờ để tránh timeout
+
+jobs:
+  run-bot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360  # 6 giờ timeout
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+        
+    - name: Install dependencies
+      run: |
+        pip install --upgrade pip
+        pip install -r requirements.txt
+        
+    - name: Create .env file
+      run: |
+        echo "DISCORD_TOKEN=${{ secrets.DISCORD_TOKEN }}" > src/.env
+        echo "FIREBASE_CREDENTIALS=${{ secrets.FIREBASE_CREDENTIALS }}" >> src/.env
+        
+    - name: Run bot with restart capability
+      run: |
+        cd src
+        python bot_runner.py
+      env:
+        DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
+        FIREBASE_CREDENTIALS: ${{ secrets.FIREBASE_CREDENTIALS }}
+        
+    - name: Upload bot logs
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: bot-logs
+        path: src/bot.log
