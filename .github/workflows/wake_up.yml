@@ -26,11 +26,16 @@ jobs:
       - name: Create configs directory
         run: mkdir -p configs
 
+      - name: Write Firebase credentials files
+        run: |
+          echo '${{ secrets.FIREBASE_CREDENTIALS }}' > configs/serviceAccount.json
+          echo '${{ secrets.FIREBASE_CONFIG_JSON }}' > configs/firebaseServiceAccount.json
+
       - name: Create .env file
         run: |
           echo "DISCORD_TOKEN=${{ secrets.DISCORD_TOKEN }}" >> .env
-          echo "FIREBASE_CREDENTIALS=${{ secrets.FIREBASE_CREDENTIALS }}" >> .env
-          echo "FIREBASE_CONFIG_JSON=${{ secrets.FIREBASE_CONFIG_JSON }}" >> .env
+          echo "FIREBASE_CREDENTIALS=configs/serviceAccount.json" >> .env
+          echo "FIREBASE_CONFIG_JSON=configs/firebaseServiceAccount.json" >> .env
           echo "FLASK_SECRET_KEY=${{ secrets.FLASK_SECRET_KEY }}" >> .env
 
       - name: Run bot for 10 minutes
