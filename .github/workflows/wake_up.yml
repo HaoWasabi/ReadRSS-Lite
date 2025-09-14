@@ -9,6 +9,8 @@ on:
 jobs:
   run:
     runs-on: ubuntu-latest
+    timeout-minutes: 15   # đảm bảo job không bị kill ngoài ý muốn
+
     steps:
       - uses: actions/checkout@v3
 
@@ -38,6 +40,6 @@ jobs:
           echo "FIREBASE_CONFIG_JSON=configs/firebaseServiceAccount.json" >> .env
           echo "FLASK_SECRET_KEY=${{ secrets.FLASK_SECRET_KEY }}" >> .env
 
-      - name: Run bot for 10 minutes
+      - name: Run bot for 10 minutes (ignore exit 124)
         run: |
-          timeout 600 python src/main.py
+          timeout 600 python src/main.py || echo "Bot stopped after 10 minutes (exit 124 is expected)"
