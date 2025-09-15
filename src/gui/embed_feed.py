@@ -18,12 +18,18 @@ class EmbedFeed(EmbedCustom):
         # Gọi super để kế thừa khởi tạo từ lớp cha CustomEmbed
         super().__init__(id_server=id_server, description="", **kwargs)
 
-        # Xử lý mô tả và link bài viết
-        self.description = f'''
+        # Ghép description thô
+        raw_description = f"""
             [**Xem bài viết**]({self.__emty.get_link_emty()})
             {self.__emty.get_description_emty()}
-        '''
-        self.description = TextProcessor.clean_feed_text(self.description)
+        """
+        raw_description = TextProcessor.clean_feed_text(raw_description)
+
+        # Giới hạn 2000 ký tự
+        if len(raw_description) > 2000:
+            self.description = raw_description[:2000] + "\n(Còn tiếp)"
+        else:
+            self.description = raw_description
 
         # Kiểm tra nếu có image từ entry (emty)
         if self.__emty is not None and self.__emty.get_image_emty() != "":
