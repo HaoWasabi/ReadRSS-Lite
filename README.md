@@ -36,9 +36,19 @@ FIREBASE_CREDENTIALS=your_firebase_service_account_json
     Chạy bot:
     `python main.py`
 
+
+## **New Features / Tính năng mới**
+
+- **Phân tích RSS bằng Gemini** (`/analyzerss`):
+    - Phân tích nhanh nội dung từ một RSS link hoặc URL website bất kỳ, sử dụng AI Gemini để tóm tắt và nhận diện nội dung nổi bật.
+    - Có thể dùng dưới dạng lệnh thường hoặc slash command.
+
+- **Phân tích nhanh feed từ danh sách** (nút "Phân tích" trong lệnh `/show`):
+    - Khi dùng lệnh `/show`, danh sách các feed sẽ có thêm nút "Phân tích" cho phép chọn feed và nhận kết quả phân tích nhanh bằng AI.
+
 ## **Basic slash commands / Các lệnh cơ bản**
 
-- '/ping': Check bot latency.
+- `/ping`: Check bot latency.  
 Kiểm tra tốc độ phản hồi của bot.
 
 - `/getrss url:<url web>`: Check if the website has an RSS feed.  
@@ -54,7 +64,7 @@ Thiết lập kênh để nhận thông báo bài đăng từ trang web bằng U
 Hủy thiết lập nhận thông báo từ link RSS đã đăng ký ở kênh chỉ định.
 
 - `/show`: Show the list of registered RSS feeds in the server.  
-Hiển thị danh sách các feed đã được đăng ký trong server.
+Hiển thị danh sách các feed đã được đăng ký trong server. Có thể sử dụng nút "Phân tích" để phân tích nhanh nội dung feed.
 
 **Note / Lưu ý**:  
 The Lite version of ReadRSS has limited features and cannot be used in DM channels.  
