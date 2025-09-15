@@ -4,6 +4,9 @@ from typing import Optional
 from dto.emty_dto import EmtyDTO
 from dal.base_dal import BaseDAL
 from dal.base_dal import logger
+import google.generativeai as genai
+from google.cloud import firestore
+import os
 
 class EmtyDAL(BaseDAL):
     def __init__(self):

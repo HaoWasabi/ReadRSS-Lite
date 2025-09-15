@@ -1,3 +1,4 @@
+from click import prompt
 from bll.singleton import Singleton
 from dto.emty_dto import EmtyDTO
 from dal.emty_dal import EmtyDAL

@@ -52,7 +52,7 @@ class Events(CommandsCog):
     async def _process_feed_and_send(self, feed, emty_bll: EmtyBLL, target, id_server: str):
         """Đọc RSS feed và gửi embed đến target (channel hoặc user)."""
         try:
-            feed_data = await read_rss_link(rss_link=feed.get_link_atom_feed())
+            feed_data = read_rss_link(rss_link=feed.get_link_atom_feed())
             if not feed_data or not all(feed_data):
                 logger.warning(f"Incomplete feed data for {feed.get_link_atom_feed()}")
                 return
