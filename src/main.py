@@ -74,7 +74,10 @@ async def load_cogs():
         cog_name = f'cogs.{filename[:-3]}'
         try:
             logger.info(f"🔄 Loading extension: {cog_name}")
-            await bot.load_extension(cog_name)  # ✅ Dùng await
+            # Fix: bot.load_extension() returns None in nextcord 2.6.0
+            result = bot.load_extension(cog_name)
+            if result is not None:
+                await result  # Only await if it returns something
             logger.info(f'✅ Successfully loaded extension {cog_name}')
         except Exception as e:
             logger.error(f'❌ Failed to load extension {cog_name}: {e}')

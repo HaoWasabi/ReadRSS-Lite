@@ -142,4 +142,8 @@ class Events(CommandsCog):
             self.push_noti.start()
 
 async def setup(bot: commands.Bot):
-    await bot.add_cog(Events(bot))
+    try:
+        await bot.add_cog(Events(bot))
+    except TypeError:
+        # Fallback for older nextcord versions
+        bot.add_cog(Events(bot))

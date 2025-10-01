@@ -107,4 +107,8 @@ class CommandSetFeed(CommandsCog):
 
 async def setup(bot):
     """Hàm khởi tạo để thêm cog vào bot."""
-    await bot.add_cog(CommandSetFeed(bot))
+    try:
+        await bot.add_cog(CommandSetFeed(bot))
+    except TypeError:
+        # Fallback for older nextcord versions
+        bot.add_cog(CommandSetFeed(bot))

@@ -69,4 +69,8 @@ class CommandAnalyzeRSS(CommandsCog):
 
 async def setup(bot):
     """Hàm khởi tạo để thêm cog vào bot."""
-    await bot.add_cog(CommandAnalyzeRSS(bot))
+    try:
+        await bot.add_cog(CommandAnalyzeRSS(bot))
+    except TypeError:
+        # Fallback for older nextcord versions
+        bot.add_cog(CommandAnalyzeRSS(bot))

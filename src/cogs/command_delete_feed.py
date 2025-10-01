@@ -77,4 +77,8 @@ class CommandDeleteFeed(CommandsCog):
             logger.error(f"Error: {e}")
                   
 async def setup(bot):
-    await bot.add_cog(CommandDeleteFeed(bot))
+    try:
+        await bot.add_cog(CommandDeleteFeed(bot))
+    except TypeError:
+        # Fallback for older nextcord versions
+        bot.add_cog(CommandDeleteFeed(bot))

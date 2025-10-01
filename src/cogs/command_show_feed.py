@@ -127,4 +127,8 @@ class CommandShowChannel(CommandsCog):
             logger.error(f"Error: {e}")
 
 async def setup(bot):
-    await bot.add_cog(CommandShowChannel(bot))
+    try:
+        await bot.add_cog(CommandShowChannel(bot))
+    except TypeError:
+        # Fallback for older nextcord versions
+        bot.add_cog(CommandShowChannel(bot))

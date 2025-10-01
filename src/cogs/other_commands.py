@@ -72,4 +72,8 @@ command prefix `{self.bot.command_prefix}`
             logger.error(f"Error: {e}")
 
 async def setup(bot):
-    await bot.add_cog(OtherCommands(bot))
+    try:
+        await bot.add_cog(OtherCommands(bot))
+    except TypeError:
+        # Fallback for older nextcord versions
+        bot.add_cog(OtherCommands(bot))

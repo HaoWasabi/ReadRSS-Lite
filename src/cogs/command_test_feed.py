@@ -64,4 +64,8 @@ class CommandTestFeed(CommandsCog):
         await self._test(interaction.followup, interaction.guild, interaction.user, link_rss)
 
 async def setup(bot):
-    await bot.add_cog(CommandTestFeed(bot))
+    try:
+        await bot.add_cog(CommandTestFeed(bot))
+    except TypeError:
+        # Fallback for older nextcord versions
+        bot.add_cog(CommandTestFeed(bot))
