@@ -31,6 +31,20 @@ bot = commands.Bot(command_prefix='_', intents=intents)
 async def on_ready():
     logger.info(f"✅ Logged in as {bot.user} (ID: {bot.user.id})")
     logger.info(f"🔗 Connected to {len(bot.guilds)} guild(s).")
+    
+    # Sync slash commands
+    logger.info("🔄 Syncing slash commands...")
+    try:
+        await bot.sync_all_application_commands()
+        logger.info("✅ All slash commands synced!")
+        
+        # Log loaded commands
+        logger.info(f"📋 Commands: {[c.name for c in bot.commands]}")
+        logger.info(f"⚡ Slash Commands: {[c.name for c in bot.get_application_commands()]}")
+    except Exception as e:
+        logger.error(f"❌ Failed to sync commands: {e}")
+        import traceback
+        traceback.print_exc()
 
 
 # --- Web server để GitHub Actions ping ---
@@ -51,14 +65,21 @@ def run_flask():
 # --- Load cogs ---
 async def load_cogs():
     cogs_dir = os.path.join(os.path.dirname(__file__), 'cogs')
-    for filename in os.listdir(cogs_dir):
-        if filename.endswith('.py') and filename != '__init__.py':
-            cog_name = f'cogs.{filename[:-3]}'
-            try:
-                await bot.load_extension(cog_name)  # ✅ Dùng await
-                logger.info(f'Successfully loaded extension {cog_name}')
-            except Exception as e:
-                logger.error(f'Failed to load extension {cog_name}: {e}')
+    logger.info(f"🔍 Looking for cogs in: {cogs_dir}")
+    
+    cog_files = [f for f in os.listdir(cogs_dir) if f.endswith('.py') and f != '__init__.py']
+    logger.info(f"📁 Found cog files: {cog_files}")
+    
+    for filename in cog_files:
+        cog_name = f'cogs.{filename[:-3]}'
+        try:
+            logger.info(f"🔄 Loading extension: {cog_name}")
+            await bot.load_extension(cog_name)  # ✅ Dùng await
+            logger.info(f'✅ Successfully loaded extension {cog_name}')
+        except Exception as e:
+            logger.error(f'❌ Failed to load extension {cog_name}: {e}')
+            import traceback
+            traceback.print_exc()
 
 
 # --- Main ---

@@ -141,5 +141,5 @@ class Events(CommandsCog):
         if not self.push_noti.is_running():
             self.push_noti.start()
 
-def setup(bot: commands.Bot):
-    bot.add_cog(Events(bot))
+async def setup(bot: commands.Bot):
+    await bot.add_cog(Events(bot))

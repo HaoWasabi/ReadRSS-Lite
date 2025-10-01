@@ -107,4 +107,4 @@ class CommandSetFeed(CommandsCog):
 
 async def setup(bot):
     """Hàm khởi tạo để thêm cog vào bot."""
-    bot.add_cog(CommandSetFeed(bot))
+    await bot.add_cog(CommandSetFeed(bot))

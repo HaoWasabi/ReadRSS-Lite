@@ -1,17 +1,24 @@
+# Core dependencies
 beautifulsoup4==4.12.3
 feedparser==6.0.11
 nextcord==2.6.0
 python-dotenv==1.0.1
-setuptools==73.0.1
-firebase-admin==7.1.0
-cloudscraper
-Flask
-beautifulsoup4==4.12.3
-feedparser==6.0.11
-nextcord==2.6.0
-python-dotenv==1.0.1
-setuptools==73.0.1
-firebase-admin==7.1.0
-cloudscraper
-Flask
-google-generativeai
+
+# Firebase and Google services
+firebase-admin==6.5.0
+google-generativeai>=0.8.0
+
+# Web scraping and HTTP requests
+cloudscraper==1.2.71
+requests>=2.31.0
+urllib3>=1.26.0,<2.0.0
+requests-toolbelt>=0.10.1,<1.0.0
+
+# Web framework
+Flask>=2.3.0
+
+# Build tools
+setuptools>=73.0.1
+
+# Optional: Fix potential conflicts
+pyrebase4>=4.7.1

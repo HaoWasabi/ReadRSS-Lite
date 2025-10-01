@@ -77,4 +77,4 @@ class CommandDeleteFeed(CommandsCog):
             logger.error(f"Error: {e}")
                   
 async def setup(bot):
-    bot.add_cog(CommandDeleteFeed(bot))
+    await bot.add_cog(CommandDeleteFeed(bot))

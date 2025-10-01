@@ -72,4 +72,4 @@ command prefix `{self.bot.command_prefix}`
             logger.error(f"Error: {e}")
 
 async def setup(bot):
-    bot.add_cog(OtherCommands(bot))
+    await bot.add_cog(OtherCommands(bot))
