@@ -226,7 +226,7 @@ def analyze_rss_link(rss_link: str, num_entries: int = 5, prompt_file: str = "pr
 
         # gọi Gemini
         genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-        model = genai.GenerativeModel("gemini-1.5-flash")
+        model = genai.GenerativeModel("gemini-2.5-flash")
         response = model.generate_content(full_prompt)
 
         if hasattr(response, "text") and response.text:
